@@ -11,20 +11,9 @@ Moview is a modern React web application that lets you search for movies, view t
 - **Persistent Storage:** Your watched list is saved in your browser's local storage.
 - **Responsive UI:** Clean, modern design with responsive layout.
 
-## Screenshots
-
-![Screenshot of Moview App](https://via.placeholder.com/800x400?text=Moview+App+Screenshot)
-
-## Getting Started
-
-### Prerequisites
-
-- [Node.js](https://nodejs.org/) (v14 or newer recommended)
-- [npm](https://www.npmjs.com/) (comes with Node.js)
-
 ### Installation
 
-1. **Clone the repository:**
+  **Clone the repository:**
    ```sh
    git clone https://github.com/yourusername/moview.git
    cd moview# moview
