@@ -1,6 +1,6 @@
 # Moview 🎬
 
-Moview is a modern React web application that lets you search for movies, view their details, and keep track of the movies you've watched. It uses the [OMDb API](https://www.omdbapi.com/) to fetch movie data and provides a clean, interactive UI with features like star ratings and persistent watched lists.
+Moview is a modern React web application that lets you search for movies, view their details, and keep track of the movies you've watched.
 
 ## Features
 
