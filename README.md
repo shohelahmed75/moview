@@ -7,7 +7,7 @@ Moview is a modern React web application that lets you search for movies, view t
 - **Search Movies:** Type at least 3 characters to search for movies by title.
 - **Movie Details:** Click on a movie to view detailed information, including plot, actors, director, genre, and IMDb rating.
 - **Star Rating:** Rate movies using a customizable star rating component.
-- **Watched List:** Add movies to your watched list with your own rating and see a summary of your watched stats.
+- **Watch List:** Add movies to your watch list with your own rating and see a summary of your watched stats.
 - **Persistent Storage:** Your watched list is saved in your browser's local storage.
 - **Responsive UI:** Clean, modern design with responsive layout.
 
