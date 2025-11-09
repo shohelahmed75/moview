@@ -15,5 +15,5 @@ Moview is a modern React web application that lets you search for movies, view t
 
   **Clone the repository:**
    ```sh
-   git clone https://github.com/yourusername/moview.git
+   git clone https://github.com/shohelahmed75/moview.git
    cd moview# moview
