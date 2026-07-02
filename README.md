@@ -2,7 +2,7 @@
 
 FlickerBox is a modern fullstack web application that lets you search for movies, view details, rate them, and manage your custom watched list. 
 
-Now updated with user authentication and database persistence, FlickerBox ensures every user has their own private watchlist and set of movie ratings.
+Now updated with user authentication, database persistence, and a premium design, FlickerBox ensures every user has their own private watchlist and set of movie ratings.
 
 ---
 
@@ -11,10 +11,15 @@ Now updated with user authentication and database persistence, FlickerBox ensure
 - **Multi-User Accounts & Authentication**: Secure sign-up, login, and token-based authentication (JWT) to protect user sessions.
 - **Isolated Databases**: Watchlists and ratings are stored in an SQLite database, ensuring users only see their own content.
 - **Search Movies**: Integrated with the OMDb API (using HTTPS) to search for movies by title.
+- **Floating Search Suggestions Dropdown**: Suggestion items appear dynamically under the search input with titles, years, and thumbnail images. Click-outside listener closes the menu.
+- **Separate Mobile Search Row**: On mobile screens, the search bar resides on a dedicated extra row below the header bar.
+- **Mobile Responsive Hamburger Drawer**: On phones, the navbar collapses into a 3-bar hamburger icon on the right, which opens a drawer showing the user profile, logout actions, and watched list stats.
 - **Movie Details**: View detailed information (released date, director, actors, runtime, IMDb rating, and plot summaries).
 - **Interactive Star Rating**: Rate movies using a custom stars component.
-- **Watched Summary**: Dynamic stats calculations (movies watched, average IMDb rating, average user rating, and total watch duration).
-- **Responsive & Dynamic UI**: Sleek, modern interface styled in a premium orange/gray color scheme.
+- **4-Column Watched Card Grid**: Overhauled Watched Movies list into a card grid layout showing 4 items per row on desktop, collapsing dynamically to 3, 2, and 1 item(s) as screen size decreases.
+- **Landscape Poster Cover Images**: Watchlist items display horizontal cover posters (`16:9` ratio) instead of traditional vertical layout orientations.
+- **Watched Summary**: Dynamic stats calculations (movies watched, average IMDb rating, average user rating, and sum of total watch duration).
+- **Clean Aesthetic**: A modern premium interface inspired by Framer templates with a black capsule navbar, high border-radii cards, smooth micro-animations, and clean typography. Contains no code comments for a clean repository profile.
 
 ---
 

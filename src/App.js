@@ -21,6 +21,24 @@ export default function App() {
   const [token, setToken] = useState(() => localStorage.getItem("token") || null);
   const [watched, setWatched] = useState([]);
   const [isWatchlistLoading, setIsWatchlistLoading] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      const menu = document.querySelector(".mobile-menu");
+      const btnMenu = document.querySelector(".btn-menu");
+      if (
+        menu &&
+        !menu.contains(event.target) &&
+        btnMenu &&
+        !btnMenu.contains(event.target)
+      ) {
+        setIsMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   useEffect(() => {
     if (!token) return;
@@ -123,28 +141,52 @@ export default function App() {
 
   return (
     <>
-      <NavBar>
-        <Search query={query} setQuery={setQuery} />
-        <div className="nav-user-container">
-          <NumResults movies={movies} />
-          <div className="user-profile">
-            <span className="user-welcome">Welcome, {user.username}</span>
-            <button className="btn-logout" onClick={handleLogout}>
-              Logout
-            </button>
+      <NavBar
+        search={
+          <Search
+            query={query}
+            setQuery={setQuery}
+            movies={movies}
+            isLoading={isLoading}
+            error={error}
+            onSelectMovie={handleSelectMovie}
+          />
+        }
+        profile={
+          <div className="nav-user-container">
+            <div className="user-profile">
+              <span className="user-welcome">{user.username}</span>
+              <button className="btn-logout" onClick={handleLogout}>
+                Logout
+              </button>
+            </div>
           </div>
-        </div>
-      </NavBar>
+        }
+        menuButton={
+          <button className="btn-menu" onClick={() => setIsMenuOpen((open) => !open)} aria-label="Toggle Menu">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M4 6h16M4 12h16M4 18h16" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
+        }
+        menuDrawer={
+          isMenuOpen && (
+            <div className="mobile-menu">
+              <div className="mobile-user-profile">
+                <span className="user-welcome">{user.username}</span>
+                <button className="btn-logout" onClick={() => { handleLogout(); setIsMenuOpen(false); }}>
+                  Logout
+                </button>
+              </div>
+              <div className="mobile-watched-summary">
+                <WatchedSummary watched={watched} />
+              </div>
+            </div>
+          )
+        }
+      />
 
       <Main>
-        <Box>
-          {isLoading && <Loader />}
-          {!isLoading && !error && (
-            <MovieList movies={movies} onSelectMovie={handleSelectMovie} />
-          )}
-          {error && <ErrorMessage message={error} />}
-        </Box>
-
         <Box>
           {selectedId ? (
             <MovieDetails
@@ -159,7 +201,9 @@ export default function App() {
                 <Loader />
               ) : (
                 <>
-                  <WatchedSummary watched={watched} />
+                  <div className="desktop-only-summary">
+                    <WatchedSummary watched={watched} />
+                  </div>
                   <WatchedMoviesList
                     watched={watched}
                     onDeleteWatched={handleDeleteWatched}
@@ -178,34 +222,36 @@ function Loader() {
   return <p className="loader">Loading...</p>;
 }
 
-function ErrorMessage({ message }) {
+function NavBar({ search, profile, menuButton, menuDrawer }) {
   return (
-    <p className="error">
-      <span>⛔️</span> {message}
-    </p>
-  );
-}
-
-function NavBar({ children }) {
-  return (
-    <nav className="nav-bar">
-      <Logo />
-      {children}
-    </nav>
+    <div className="nav-container-wrapper">
+      <nav className="nav-bar">
+        <Logo />
+        <div className="desktop-search-wrapper">
+          {search}
+        </div>
+        {profile}
+        {menuButton}
+        {menuDrawer}
+      </nav>
+      <div className="mobile-search-wrapper">
+        {search}
+      </div>
+    </div>
   );
 }
 
 function Logo() {
   return (
     <div className="logo">
-      <span role="img" aria-label="clapper board">🎬</span>
       <h1>FlickerBox</h1>
     </div>
   );
 }
 
-function Search({ query, setQuery }) {
+function Search({ query, setQuery, movies, isLoading, error, onSelectMovie }) {
   const inputEl = useRef(null);
+  const [isOpen, setIsOpen] = useState(false);
 
   useKey("Enter", function () {
     if (document.activeElement === inputEl.current) return;
@@ -213,23 +259,68 @@ function Search({ query, setQuery }) {
     setQuery("");
   });
 
-  return (
-    <input
-      className="search"
-      type="text"
-      placeholder="Search movies..."
-      value={query}
-      onChange={(e) => setQuery(e.target.value)}
-      ref={inputEl}
-    />
-  );
-}
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (inputEl.current && !inputEl.current.contains(event.target)) {
+        const dropdown = document.querySelector(".search-dropdown");
+        if (dropdown && dropdown.contains(event.target)) {
+          return;
+        }
+        setIsOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
-function NumResults({ movies }) {
   return (
-    <p className="num-results">
-      Found <strong>{movies.length}</strong> results
-    </p>
+    <div className="search-container">
+      <input
+        className="search"
+        type="text"
+        placeholder="Search movies..."
+        value={query}
+        onChange={(e) => {
+          setQuery(e.target.value);
+          setIsOpen(true);
+        }}
+        onFocus={() => setIsOpen(true)}
+        ref={inputEl}
+      />
+      {isOpen && query.length >= 3 && (
+        <div className="search-dropdown">
+          {isLoading && <p className="dropdown-message">Loading suggestions...</p>}
+          {error && <p className="dropdown-message">{error}</p>}
+          {!isLoading && !error && movies?.length === 0 && (
+            <p className="dropdown-message">No movies found</p>
+          )}
+          {!isLoading && !error && movies?.map((movie) => (
+            <button
+              key={movie.imdbID}
+              className="dropdown-item"
+              onClick={() => {
+                onSelectMovie(movie.imdbID);
+                setIsOpen(false);
+                setQuery("");
+              }}
+            >
+              <img
+                src={
+                  !movie.Poster || movie.Poster === "N/A"
+                    ? "https://via.placeholder.com/40x56?text=No+Img"
+                    : movie.Poster
+                }
+                alt={movie.Title}
+              />
+              <div className="dropdown-item-info">
+                <h4>{movie.Title}</h4>
+                <p>Year: {movie.Year}</p>
+              </div>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -238,41 +329,10 @@ function Main({ children }) {
 }
 
 function Box({ children }) {
-  const [isOpen, setIsOpen] = useState(true);
-
   return (
     <div className="box">
-      <button className="btn-toggle" onClick={() => setIsOpen((open) => !open)}>
-        {isOpen ? "–" : "+"}
-      </button>
-
-      {isOpen && children}
+      {children}
     </div>
-  );
-}
-
-function MovieList({ movies, onSelectMovie }) {
-  return (
-    <ul className="list list-movies">
-      {movies?.map((movie) => (
-        <Movie movie={movie} key={movie.imdbID} onSelectMovie={onSelectMovie} />
-      ))}
-    </ul>
-  );
-}
-
-function Movie({ movie, onSelectMovie }) {
-  return (
-    <li onClick={() => onSelectMovie(movie.imdbID)}>
-      <img src={movie.Poster} alt={`${movie.Title} poster`} />
-      <h3>{movie.Title}</h3>
-      <div>
-        <p>
-          <span>🗓</span>
-          <span>{movie.Year}</span>
-        </p>
-      </div>
-    </li>
   );
 }
 
@@ -427,27 +487,27 @@ function MovieDetails({ selectedId, onCloseMovie, onAddWatched, watched }) {
 function WatchedSummary({ watched }) {
   const avgImdbRating = average(watched.map((movie) => movie.imdbRating));
   const avgUserRating = average(watched.map((movie) => movie.userRating));
-  const avgRuntime = average(watched.map((movie) => movie.runtime));
+  const totalRuntime = watched.reduce((acc, movie) => acc + movie.runtime, 0);
 
   return (
     <div className="summary">
       <h2>Movies you watched</h2>
       <div>
         <p>
-          <span>#️⃣</span>
+          <span>Count</span>
           <span>{watched.length} movies</span>
         </p>
         <p>
-          <span>⭐️</span>
+          <span>IMDB</span>
           <span>{avgImdbRating.toFixed(2)}</span>
         </p>
         <p>
-          <span>🌟</span>
+          <span>You</span>
           <span>{avgUserRating.toFixed(2)}</span>
         </p>
         <p>
-          <span>⏳</span>
-          <span>{avgRuntime} min</span>
+          <span>Time</span>
+          <span>{totalRuntime} min</span>
         </p>
       </div>
     </div>
@@ -456,7 +516,7 @@ function WatchedSummary({ watched }) {
 
 function WatchedMoviesList({ watched, onDeleteWatched }) {
   return (
-    <ul className="list">
+    <ul className="list-watched">
       {watched.map((movie) => (
         <WatchedMovie
           movie={movie}
@@ -472,21 +532,22 @@ function WatchedMovie({ movie, onDeleteWatched }) {
   return (
     <li>
       <img src={movie.poster} alt={`${movie.title} poster`} />
-      <h3>{movie.title}</h3>
-      <div>
-        <p>
-          <span>⭐️</span>
-          <span>{movie.imdbRating}</span>
-        </p>
-        <p>
-          <span>🌟</span>
-          <span>{movie.userRating}</span>
-        </p>
-        <p>
-          <span>⏳</span>
-          <span>{movie.runtime} min</span>
-        </p>
-
+      <div className="card-content">
+        <h3>{movie.title}</h3>
+        <div className="card-meta">
+          <p>
+            <span>🌟</span>
+            <span>{movie.imdbRating}</span>
+          </p>
+          <p>
+            <span>⭐️</span>
+            <span>{movie.userRating}</span>
+          </p>
+          <p>
+            <span>Time:</span>
+            <span>{movie.runtime} min</span>
+          </p>
+        </div>
         <button
           className="btn-delete"
           onClick={() => onDeleteWatched(movie.imdbID)}

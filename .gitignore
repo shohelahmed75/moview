@@ -1,74 +1,35 @@
-# Node modules
 /node_modules/
-
-# Build output
 /build/
 /dist/
-
-# Production
 /out/
-
-# Next.js
 /.next/
-
-# Nuxt.js
 /.nuxt/
-
-# Parcel
 /.parcel-cache/
-
-# Testing
 /coverage/
-
-# Environment variables
 .env
 .env.*.local
-
-# Database files
 *.db
 *.db-journal
 *.sqlite
 /server/database.db
-
-# Logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
-
-# OS files
 .DS_Store
 Thumbs.db
-
-# Editor directories
 .vscode/
 .idea/
-
-# Misc caches
 .cache/
 .nyc_output/
 .sass-cache/
 .turbo/
-
-# TypeScript
 *.tsbuildinfo
-
-# Storybook
 storybook-static/
-
-# Runtime files
 .pids
 *.pid
 *.seed
 *.pid.lock
-
-# Yarn v2
 /.pnp/
 .pnp.js
-
-# ESLint cache
 .eslintcache
-
-# Optional: ignore local env examples but keep committed sample files
-# Uncomment if you want to keep example env files tracked
-# !.env.example

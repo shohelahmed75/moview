@@ -9,11 +9,9 @@ const app = express();
 const PORT = process.env.PORT || 5001;
 const JWT_SECRET = process.env.JWT_SECRET || "flickerbox-secret-key-12345";
 
-// Middleware
 app.use(cors());
 app.use(express.json());
 
-// Initialize Database
 const dbPath = path.join(__dirname, "database.db");
 const db = new sqlite3.Database(dbPath, (err) => {
   if (err) {
@@ -24,7 +22,6 @@ const db = new sqlite3.Database(dbPath, (err) => {
   }
 });
 
-// Helper to convert database runs/queries to promises
 function dbRun(query, params = []) {
   return new Promise((resolve, reject) => {
     db.run(query, params, function (err) {
@@ -84,7 +81,6 @@ async function initializeTables() {
   }
 }
 
-// Authentication Middleware
 function authenticateToken(req, res, next) {
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1];
@@ -102,9 +98,6 @@ function authenticateToken(req, res, next) {
   });
 }
 
-// --- AUTHENTICATION ENDPOINTS ---
-
-// Register
 app.post("/api/auth/register", async (req, res) => {
   const { username, password } = req.body;
 
@@ -139,7 +132,6 @@ app.post("/api/auth/register", async (req, res) => {
   }
 });
 
-// Login
 app.post("/api/auth/login", async (req, res) => {
   const { username, password } = req.body;
 
@@ -170,14 +162,10 @@ app.post("/api/auth/login", async (req, res) => {
   }
 });
 
-// Get profile (Me)
 app.get("/api/auth/me", authenticateToken, async (req, res) => {
   res.json({ user: req.user });
 });
 
-// --- WATCHLIST ENDPOINTS ---
-
-// Get User's Watchlist
 app.get("/api/watchlist", authenticateToken, async (req, res) => {
   try {
     const rows = await dbAll(
@@ -191,7 +179,6 @@ app.get("/api/watchlist", authenticateToken, async (req, res) => {
   }
 });
 
-// Add to Watchlist
 app.post("/api/watchlist", authenticateToken, async (req, res) => {
   const { imdbID, title, year, poster, runtime, imdbRating, userRating } = req.body;
 
@@ -200,20 +187,20 @@ app.post("/api/watchlist", authenticateToken, async (req, res) => {
   }
 
   try {
-    // Check if duplicate
+    
     const existing = await dbGet(
       "SELECT id FROM watchlist WHERE user_id = ? AND imdbID = ?",
       [req.user.id, imdbID]
     );
 
     if (existing) {
-      // Update rating if already exists
+      
       await dbRun(
         "UPDATE watchlist SET userRating = ? WHERE user_id = ? AND imdbID = ?",
         [userRating, req.user.id, imdbID]
       );
     } else {
-      // Insert new
+      
       await dbRun(
         `INSERT INTO watchlist (user_id, imdbID, title, year, poster, runtime, imdbRating, userRating)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -228,7 +215,6 @@ app.post("/api/watchlist", authenticateToken, async (req, res) => {
   }
 });
 
-// Delete from Watchlist
 app.delete("/api/watchlist/:imdbID", authenticateToken, async (req, res) => {
   const { imdbID } = req.params;
 
@@ -249,7 +235,6 @@ app.delete("/api/watchlist/:imdbID", authenticateToken, async (req, res) => {
   }
 });
 
-// Serve Client Static Build Files (Production)
 const buildPath = path.join(__dirname, "../build");
 app.use(express.static(buildPath));
 
@@ -257,7 +242,6 @@ app.get("*", (req, res) => {
   res.sendFile(path.join(buildPath, "index.html"));
 });
 
-// Start Server
 app.listen(PORT, () => {
   console.log(`FlickerBox fullstack server running on port ${PORT}`);
 });

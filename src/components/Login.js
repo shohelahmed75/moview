@@ -34,7 +34,6 @@ export default function Login({ onLogin }) {
         throw new Error(data.error || "Something went wrong. Please try again.");
       }
 
-      // Successful auth
       onLogin(data.user, data.token);
     } catch (err) {
       setError(err.message);
@@ -47,7 +46,6 @@ export default function Login({ onLogin }) {
     <div className="login-container">
       <div className="login-card">
         <div className="login-header">
-          <span role="img" aria-label="clapper board">🎬</span>
           <h1>FlickerBox</h1>
           <p>{isLogin ? "Log in to view your watchlist" : "Create an account to start rating movies"}</p>
         </div>
