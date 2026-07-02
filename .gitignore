@@ -33,6 +33,5 @@ storybook-static/
 /.pnp/
 .pnp.js
 .eslintcache
-
 package.json
 package-lock.json
