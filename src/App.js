@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import StarRating from "./components/StarRating";
 import { useKey } from "./components/useKey";
-import { useLocalStorageState } from "./components/useLocalStorageState";
 import { useMovies } from "./components/useMovies";
+import Login from "./components/Login";
 
 const average = (arr) =>
   arr.reduce((acc, cur, i, arr) => acc + cur / arr.length, 0);
@@ -14,7 +14,52 @@ export default function App() {
   const [selectedId, setSelectedId] = useState(null);
   const { movies, isLoading, error } = useMovies(query);
 
-  const [watched, setWatched] = useLocalStorageState([], "watched");
+  const [user, setUser] = useState(() => {
+    const stored = localStorage.getItem("user");
+    return stored ? JSON.parse(stored) : null;
+  });
+  const [token, setToken] = useState(() => localStorage.getItem("token") || null);
+  const [watched, setWatched] = useState([]);
+  const [isWatchlistLoading, setIsWatchlistLoading] = useState(false);
+
+  useEffect(() => {
+    if (!token) return;
+
+    async function fetchWatchlist() {
+      try {
+        setIsWatchlistLoading(true);
+        const res = await fetch("/api/watchlist", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (!res.ok) throw new Error("Failed to fetch watchlist");
+        const data = await res.json();
+        setWatched(data);
+      } catch (err) {
+        console.error(err.message);
+      } finally {
+        setIsWatchlistLoading(false);
+      }
+    }
+
+    fetchWatchlist();
+  }, [token]);
+
+  function handleLogin(user, token) {
+    setUser(user);
+    setToken(token);
+    localStorage.setItem("user", JSON.stringify(user));
+    localStorage.setItem("token", token);
+  }
+
+  function handleLogout() {
+    setUser(null);
+    setToken(null);
+    setWatched([]);
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
+  }
 
   function handleSelectMovie(id) {
     setSelectedId((selectedId) => (id === selectedId ? null : id));
@@ -24,19 +69,71 @@ export default function App() {
     setSelectedId(null);
   }
 
-  function handleAddWatched(movie) {
-    setWatched((watched) => [...watched, movie]);
+  async function handleAddWatched(movie) {
+    try {
+      const res = await fetch("/api/watchlist", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(movie),
+      });
+
+      if (!res.ok) throw new Error("Failed to add movie to watchlist");
+      
+      const savedMovie = await res.json();
+      setWatched((watched) => {
+        const exists = watched.some((m) => m.imdbID === savedMovie.imdbID);
+        if (exists) {
+          return watched.map((m) => m.imdbID === savedMovie.imdbID ? savedMovie : m);
+        }
+        return [...watched, savedMovie];
+      });
+    } catch (err) {
+      console.error(err.message);
+    }
   }
 
-  function handleDeleteWatched(id) {
-    setWatched((watched) => watched.filter((movie) => movie.imdbID !== id));
+  async function handleDeleteWatched(id) {
+    try {
+      const res = await fetch(`/api/watchlist/${id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) throw new Error("Failed to delete movie from watchlist");
+      
+      setWatched((watched) => watched.filter((movie) => movie.imdbID !== id));
+    } catch (err) {
+      console.error(err.message);
+    }
+  }
+
+  if (!user || !token) {
+    return (
+      <>
+        <NavBar />
+        <Login onLogin={handleLogin} />
+      </>
+    );
   }
 
   return (
     <>
       <NavBar>
         <Search query={query} setQuery={setQuery} />
-        <NumResults movies={movies} />
+        <div className="nav-user-container">
+          <NumResults movies={movies} />
+          <div className="user-profile">
+            <span className="user-welcome">Welcome, {user.username}</span>
+            <button className="btn-logout" onClick={handleLogout}>
+              Logout
+            </button>
+          </div>
+        </div>
       </NavBar>
 
       <Main>
@@ -58,11 +155,17 @@ export default function App() {
             />
           ) : (
             <>
-              <WatchedSummary watched={watched} />
-              <WatchedMoviesList
-                watched={watched}
-                onDeleteWatched={handleDeleteWatched}
-              />
+              {isWatchlistLoading ? (
+                <Loader />
+              ) : (
+                <>
+                  <WatchedSummary watched={watched} />
+                  <WatchedMoviesList
+                    watched={watched}
+                    onDeleteWatched={handleDeleteWatched}
+                  />
+                </>
+              )}
             </>
           )}
         </Box>
@@ -239,7 +342,7 @@ function MovieDetails({ selectedId, onCloseMovie, onAddWatched, watched }) {
       async function getMovieDetails() {
         setIsLoading(true);
         const res = await fetch(
-          `http://www.omdbapi.com/?apikey=${OMDB_KEY}&i=${selectedId}`
+          `https://www.omdbapi.com/?apikey=${OMDB_KEY}&i=${selectedId}`
         );
         const data = await res.json();
         setMovie(data);
