@@ -96,7 +96,7 @@ function Logo() {
   return (
     <div className="logo">
       <span role="img" aria-label="clapper board">🎬</span>
-      <h1>Moview</h1>
+      <h1>FlickerBox</h1>
     </div>
   );
 }
@@ -256,7 +256,7 @@ function MovieDetails({ selectedId, onCloseMovie, onAddWatched, watched }) {
       document.title = `Movie | ${title}`;
 
       return function () {
-        document.title = "Moview";
+        document.title = "FlickerBox";
       };
     },
     [title]

@@ -1,6 +1,6 @@
-# Moview 🎬
+# FlickerBox 🎬
 
-Moview is a modern React web application that lets you search for movies, view their details, and keep track of the movies you've watched.
+FlickerBox is a modern React web application that lets you search for movies, view their details, and keep track of the movies you've watched.
 
 ## Features
 
@@ -15,4 +15,4 @@ Moview is a modern React web application that lets you search for movies, view t
 
   **Clone the repository:**
    ```sh
-   git clone https://github.com/shohelahmed75/moview.git
+   git clone https://github.com/shohelahmed75/FlickerBox.git
